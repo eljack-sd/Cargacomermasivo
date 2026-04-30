@@ -1,0 +1,30 @@
+# Carpetas de compilacion
+bin/
+obj/
+
+# Paquetes NuGet (se restauran automaticamente al compilar)
+packages/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Archivos temporales
+*.cache
+*.log
+*.tmp
+Thumbs.db
+
+# Archivos de publicacion
+publish/
+*.publish.xml
+*.pubxml
+*.pubxml.user
+
+# Resharper
+.idea/
+*.DotSettings.user
