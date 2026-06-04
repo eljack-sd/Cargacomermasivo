@@ -469,8 +469,8 @@ namespace CargaComerMasivo
             {
                 // ── 1. SINCRONIZAR CATÁLOGO (productos + clientes) ────────────
                 // Primero SQL + HTTP en background, luego creación en UI thread (SDK)
+                // Solo se loguea si hay algo que crear o si ocurre un error.
                 lblEstadoHora.Text = "Sincronizando catálogo...";
-                EscribirLog($"[{DateTime.Now:HH:mm:ss}] ── Sincronizando catálogo...");
                 try
                 {
                     SyncResponse syncResp = null;
@@ -500,8 +500,7 @@ namespace CargaComerMasivo
                                 ? $"[{DateTime.Now:HH:mm:ss}] CLI+  {c.Codigo}"
                                 : $"[{DateTime.Now:HH:mm:ss}] CLI!  {c.Codigo}: {err}");
                         }
-
-                    EscribirLog($"[{DateTime.Now:HH:mm:ss}] Catálogo sincronizado.");
+                    // No se loguea "catálogo sincronizado" en cada ciclo vacío
                 }
                 catch (Exception exSync)
                 {
@@ -535,8 +534,7 @@ namespace CargaComerMasivo
                     // Ciclo de 5 s — buscar últimos 60 s (con margen) para no perder pedidos; dedup via pedidos_procesados
                     unix        = DateTimeOffset.UtcNow.AddSeconds(-60).ToUnixTimeSeconds();
                     url         = string.Format(API_SPAN_URL, unix, 60);
-                    rutaArchivo = RutaDescargaLocal("span_" + DateTime.Now.ToString("yyyy-MM-dd_HHmmss"));
-                    EscribirLog($"[{DateTime.Now:HH:mm:ss}] Ciclo span 60 s.");
+                    rutaArchivo = RutaDescargaLocal("span_tmp");
                     await Task.Run(() => DescargarArchivo(url, rutaArchivo));
                 }
 
@@ -544,15 +542,17 @@ namespace CargaComerMasivo
 
                 DataTable dt = await Task.Run(() => LeerExcel(rutaArchivo));
 
+                // Borrar el archivo temporal inmediatamente después de leerlo
+                try { if (File.Exists(rutaArchivo)) File.Delete(rutaArchivo); } catch { }
+
                 if (dt.Rows.Count > 0)
                     ProcesarBloques(dt, out nuevos, out skip, out errores);
-                else
-                    EscribirLog($"[{DateTime.Now:HH:mm:ss}] Sin filas nuevas en este rango.");
+                // Sin pedidos: no se loguea nada para mantener el log limpio
             }
             catch (WebException wex)
             {
                 if (wex.Response is HttpWebResponse resp && (int)resp.StatusCode == 404)
-                    EscribirLog($"[{DateTime.Now:HH:mm:ss}] Sin pedidos en este rango (404).");
+                { /* sin pedidos en este rango — silencioso para no saturar el log */ }
                 else
                 {
                     string cod = wex.Response is HttpWebResponse r2 ? $" HTTP {(int)r2.StatusCode}" : "";
@@ -824,7 +824,9 @@ namespace CargaComerMasivo
 
             lblEstadoLog.Text = "Log: " + RutaLogHoy();
 
-            EscribirLog($"[{DateTime.Now:HH:mm:ss}] ── Resumen: {nuevos} subidos, {skip} omitidos, {errores} errores.");
+            // Solo loguear resumen si hubo actividad real
+            if (nuevos > 0 || errores > 0)
+                EscribirLog($"[{DateTime.Now:HH:mm:ss}] ── Resumen: {nuevos} subidos, {skip} omitidos, {errores} errores.");
         }
 
         // ═════════════════════════════════════════════════════════════════════
