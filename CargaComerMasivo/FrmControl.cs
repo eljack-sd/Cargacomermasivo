@@ -699,7 +699,7 @@ namespace CargaComerMasivo
                 aDescuentoDoc2 = 0,
                 aSistemaOrigen = 205, // CSISTORIG del concepto en admConceptos
                 aCodConcepto   = codConcepto,
-                aSerie         = serie, // Serie del Excel col 6: "" → Pedido, "A" → Pedido A, "F" → Pedido F, etc.
+                aSerie         = "", // Debe ser vacío: el SDK usa CSERIEPOROMISION del concepto. Pasar la serie causa 130101.
                 aFecha         = fecha,
                 aCodigoCteProv = codCte,
                 aCodigoAgente  = "",
