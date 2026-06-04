@@ -30,6 +30,7 @@ namespace CargaComerMasivo
         public FrmConexion()
         {
             InitializeComponent();
+            UITheme.AplicarIconoForm(this);
             this.Shown += (s, e) => Inicializar();
         }
 
@@ -320,8 +321,9 @@ namespace CargaComerMasivo
 
             if (res == 0)
             {
+                Program.DirEmpresa = ruta; // guardar para poder reabrir el SDK después del sync
                 SetEstado("✔ Empresa abierta correctamente.", System.Drawing.Color.Green);
-                new FrmMenu().Show();
+                new FrmControl().Show();
                 this.Hide();
             }
             else

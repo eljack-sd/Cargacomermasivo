@@ -4,53 +4,39 @@ namespace CargaComerMasivo
     {
         private System.ComponentModel.IContainer components = null;
 
-        // Header
+        // ── Header ───────────────────────────────────────────────────────────
         private System.Windows.Forms.Panel pnlHeader;
         private System.Windows.Forms.Label lblTitulo;
+        private RoundedButton btnHeaderCancelar;
+        private RoundedButton btnHeaderAlmacenes;
+        private RoundedButton btnHeaderAgentes;
 
-        // Excel frame
-        private System.Windows.Forms.GroupBox grpExcel;
+        // ── Tarjeta Archivo Excel ────────────────────────────────────────────
+        private System.Windows.Forms.Panel  pnlExcel;
         private System.Windows.Forms.TextBox  txtRutaExcel;
-        private System.Windows.Forms.Button   btnExaminar;
-        private System.Windows.Forms.Button   btnCargarExcel;
+        private RoundedButton btnExaminar;
+        private RoundedButton btnCargarExcel;
 
-        // Encabezado del documento
-        private System.Windows.Forms.GroupBox  grpEncabezado;
-        private System.Windows.Forms.Label     lblConcepto;
-        private System.Windows.Forms.ComboBox  cbConcepto;
-        private System.Windows.Forms.Label     lblFecha;
-        private System.Windows.Forms.TextBox   txtFecha;
-        private System.Windows.Forms.Label     lblFolio;
-        private System.Windows.Forms.TextBox   txtFolio;
-        private System.Windows.Forms.TextBox   txtSerie;
-        private System.Windows.Forms.Label     lblSerie;
-        private System.Windows.Forms.Button    btnSiguienteFolio;
-        private System.Windows.Forms.Label     lblCliente;
-        private System.Windows.Forms.ComboBox  cbCliente;
-        private System.Windows.Forms.Label     lblAgente;
-        private System.Windows.Forms.ComboBox  cbAgente;
-        private System.Windows.Forms.Label     lblMoneda;
-        private System.Windows.Forms.ComboBox  cbMoneda;
-        private System.Windows.Forms.Label     lblTipoCambio;
-        private System.Windows.Forms.TextBox   txtTipoCambio;
-        private System.Windows.Forms.Label     lblAlmacen;
-        private System.Windows.Forms.ComboBox  cbAlmacen;
-        private System.Windows.Forms.Label     lblReferencia;
-        private System.Windows.Forms.TextBox   txtReferencia;
-        private System.Windows.Forms.Label     lblObservaciones;
-        private System.Windows.Forms.TextBox   txtObservaciones;
+        // ── Tarjeta Encabezado del Documento ────────────────────────────────
+        private System.Windows.Forms.Panel    pnlEncabezado;
+        private System.Windows.Forms.Label    lblConcepto;
+        private System.Windows.Forms.ComboBox cbConcepto;
+        private System.Windows.Forms.Label    lblFecha;
+        private System.Windows.Forms.TextBox  txtFecha;
+        private System.Windows.Forms.Label    lblAlmacen;
+        private System.Windows.Forms.ComboBox cbAlmacen;
 
-        // Grid
-        private System.Windows.Forms.DataGridView  dgvMovimientos;
-        private System.Windows.Forms.Label         lblTotalLineas;
-        private System.Windows.Forms.ProgressBar   pbProgreso;
+        // ── Grid ─────────────────────────────────────────────────────────────
+        private System.Windows.Forms.DataGridView dgvMovimientos;
 
-        // Botones accion
-        private System.Windows.Forms.CheckBox chkUnaSolaFactura;
-        private System.Windows.Forms.Button   btnCargaMasiva;
-        private System.Windows.Forms.Button   btnGuardar;
-        private System.Windows.Forms.Button   btnSalir;
-        private System.Windows.Forms.Label    lblEstado;
+        // ── Barra inferior (acción) ───────────────────────────────────────────
+        private System.Windows.Forms.Panel  pnlBottomBar;
+        private System.Windows.Forms.ProgressBar  pbProgreso;
+        private System.Windows.Forms.Label        lblTotalLineas;
+        private System.Windows.Forms.CheckBox     chkUnaSolaFactura;
+        private RoundedButton btnCargaMasiva;
+        private System.Windows.Forms.Label        lblEstado;
+        private RoundedButton btnSalir;
 
         protected override void Dispose(bool disposing)
         {
@@ -60,310 +46,340 @@ namespace CargaComerMasivo
 
         private void InitializeComponent()
         {
-            this.pnlHeader         = new System.Windows.Forms.Panel();
-            this.lblTitulo         = new System.Windows.Forms.Label();
-            this.grpExcel          = new System.Windows.Forms.GroupBox();
-            this.txtRutaExcel      = new System.Windows.Forms.TextBox();
-            this.btnExaminar       = new System.Windows.Forms.Button();
-            this.btnCargarExcel    = new System.Windows.Forms.Button();
-            this.grpEncabezado     = new System.Windows.Forms.GroupBox();
-            this.lblConcepto       = new System.Windows.Forms.Label();
-            this.cbConcepto        = new System.Windows.Forms.ComboBox();
-            this.lblFecha          = new System.Windows.Forms.Label();
-            this.txtFecha          = new System.Windows.Forms.TextBox();
-            this.lblFolio          = new System.Windows.Forms.Label();
-            this.txtFolio          = new System.Windows.Forms.TextBox();
-            this.lblSerie          = new System.Windows.Forms.Label();
-            this.txtSerie          = new System.Windows.Forms.TextBox();
-            this.btnSiguienteFolio = new System.Windows.Forms.Button();
-            this.lblCliente        = new System.Windows.Forms.Label();
-            this.cbCliente         = new System.Windows.Forms.ComboBox();
-            this.lblAgente         = new System.Windows.Forms.Label();
-            this.cbAgente          = new System.Windows.Forms.ComboBox();
-            this.lblMoneda         = new System.Windows.Forms.Label();
-            this.cbMoneda          = new System.Windows.Forms.ComboBox();
-            this.lblTipoCambio     = new System.Windows.Forms.Label();
-            this.txtTipoCambio     = new System.Windows.Forms.TextBox();
-            this.lblAlmacen        = new System.Windows.Forms.Label();
-            this.cbAlmacen         = new System.Windows.Forms.ComboBox();
-            this.lblReferencia     = new System.Windows.Forms.Label();
-            this.txtReferencia     = new System.Windows.Forms.TextBox();
-            this.lblObservaciones  = new System.Windows.Forms.Label();
-            this.txtObservaciones  = new System.Windows.Forms.TextBox();
-            this.dgvMovimientos    = new System.Windows.Forms.DataGridView();
-            this.lblTotalLineas    = new System.Windows.Forms.Label();
-            this.pbProgreso        = new System.Windows.Forms.ProgressBar();
-            this.chkUnaSolaFactura = new System.Windows.Forms.CheckBox();
-            this.btnCargaMasiva    = new System.Windows.Forms.Button();
-            this.btnGuardar        = new System.Windows.Forms.Button();
-            this.btnSalir          = new System.Windows.Forms.Button();
-            this.lblEstado         = new System.Windows.Forms.Label();
+            this.pnlHeader          = new System.Windows.Forms.Panel();
+            this.lblTitulo          = new System.Windows.Forms.Label();
+            this.btnHeaderCancelar  = new RoundedButton();
+            this.btnHeaderAlmacenes = new RoundedButton();
+            this.btnHeaderAgentes   = new RoundedButton();
+            this.pnlExcel           = new System.Windows.Forms.Panel();
+            this.txtRutaExcel       = new System.Windows.Forms.TextBox();
+            this.btnExaminar        = new RoundedButton();
+            this.btnCargarExcel     = new RoundedButton();
+            this.pnlEncabezado      = new System.Windows.Forms.Panel();
+            this.lblConcepto        = new System.Windows.Forms.Label();
+            this.cbConcepto         = new System.Windows.Forms.ComboBox();
+            this.lblFecha           = new System.Windows.Forms.Label();
+            this.txtFecha           = new System.Windows.Forms.TextBox();
+            this.lblAlmacen         = new System.Windows.Forms.Label();
+            this.cbAlmacen          = new System.Windows.Forms.ComboBox();
+            this.dgvMovimientos     = new System.Windows.Forms.DataGridView();
+            this.pnlBottomBar       = new System.Windows.Forms.Panel();
+            this.pbProgreso         = new System.Windows.Forms.ProgressBar();
+            this.lblTotalLineas     = new System.Windows.Forms.Label();
+            this.chkUnaSolaFactura  = new System.Windows.Forms.CheckBox();
+            this.btnCargaMasiva     = new RoundedButton();
+            this.lblEstado          = new System.Windows.Forms.Label();
+            this.btnSalir           = new RoundedButton();
 
-            var font9  = new System.Drawing.Font("Century Gothic", 9F);
-            var font9b = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Bold);
+            // ── Form ─────────────────────────────────────────────────────────
+            this.BackColor = UITheme.BgForm;
+            this.ForeColor = UITheme.TextMain;
 
-            // ── Header ──────────────────────────────────────────────────────────
-            pnlHeader.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            // ════════════════════════════════════════════════════════════════
+            // HEADER
+            // ════════════════════════════════════════════════════════════════
+            var lblDot   = new System.Windows.Forms.Label();
+            var pnlHLine = new System.Windows.Forms.Panel();
+
+            pnlHeader.BackColor = UITheme.BgHeader;
             pnlHeader.Dock      = System.Windows.Forms.DockStyle.Top;
-            pnlHeader.Height    = 44;
-            pnlHeader.Controls.Add(lblTitulo);
+            pnlHeader.Height    = 54;
 
+            // ◆ accent dot
+            lblDot.Text      = "◆";
+            lblDot.Font      = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            lblDot.ForeColor = UITheme.Accent;
+            lblDot.AutoSize  = true;
+            lblDot.Location  = new System.Drawing.Point(16, 17);
+
+            lblTitulo.Text      = "Carga Masiva de Documentos — CONTPAQi Comercial";
+            lblTitulo.Font      = UITheme.FntHuge;
+            lblTitulo.ForeColor = UITheme.TextMain;
             lblTitulo.AutoSize  = true;
-            lblTitulo.Font      = new System.Drawing.Font("Century Gothic", 14F, System.Drawing.FontStyle.Bold);
-            lblTitulo.ForeColor = System.Drawing.Color.White;
-            lblTitulo.Location  = new System.Drawing.Point(10, 8);
-            lblTitulo.Text      = "  Carga Masiva de Documentos — CONTPAQi Comercial";
+            lblTitulo.Location  = new System.Drawing.Point(44, 17);
 
-            // ── Archivo Excel ────────────────────────────────────────────────────
-            grpExcel.Font      = font9b;
-            grpExcel.ForeColor = System.Drawing.Color.DarkBlue;
-            grpExcel.Location  = new System.Drawing.Point(10, 54);
-            grpExcel.Size      = new System.Drawing.Size(1150, 60);
-            grpExcel.Text      = "Archivo Excel";
-            grpExcel.Anchor    = System.Windows.Forms.AnchorStyles.Top
+            // 1px accent line at bottom of header
+            pnlHLine.BackColor = UITheme.Border;
+            pnlHLine.Dock      = System.Windows.Forms.DockStyle.Bottom;
+            pnlHLine.Height    = 1;
+
+            // Nav buttons — derecha. Posición inicial arbitraria; se corrige
+            // en AjustarBotonesHeader() al hacer Load y en cada Resize del panel.
+            UITheme.StyleRoundBtn(btnHeaderCancelar, UITheme.Danger);
+            btnHeaderCancelar.Text   = "✕  Cancelar Docs";
+            btnHeaderCancelar.Size   = new System.Drawing.Size(148, 32);
+            btnHeaderCancelar.Location = new System.Drawing.Point(0, 11);
+            btnHeaderCancelar.Anchor = System.Windows.Forms.AnchorStyles.Top |
+                                       System.Windows.Forms.AnchorStyles.Left;
+            btnHeaderCancelar.Click += (s, e) => new FrmCancelaDoctos().ShowDialog();
+
+            UITheme.StyleRoundBtn(btnHeaderAlmacenes, UITheme.Neutral);
+            btnHeaderAlmacenes.Text   = "Almacenes";
+            btnHeaderAlmacenes.Size   = new System.Drawing.Size(110, 32);
+            btnHeaderAlmacenes.Location = new System.Drawing.Point(0, 11);
+            btnHeaderAlmacenes.Anchor = System.Windows.Forms.AnchorStyles.Top |
+                                        System.Windows.Forms.AnchorStyles.Left;
+            btnHeaderAlmacenes.Click += (s, e) => new FrmAlmacenes().ShowDialog();
+
+            UITheme.StyleRoundBtn(btnHeaderAgentes, UITheme.Neutral);
+            btnHeaderAgentes.Text   = "Agentes";
+            btnHeaderAgentes.Size   = new System.Drawing.Size(98, 32);
+            btnHeaderAgentes.Location = new System.Drawing.Point(0, 11);
+            btnHeaderAgentes.Anchor = System.Windows.Forms.AnchorStyles.Top |
+                                      System.Windows.Forms.AnchorStyles.Left;
+            btnHeaderAgentes.Click += (s, e) => new FrmAgentes().ShowDialog();
+
+            // Reubicar en cada Resize del panel (DockStyle.Top cambia el ancho)
+            pnlHeader.Resize += (s, pe) => AjustarBotonesHeader();
+
+            pnlHeader.Controls.Add(lblDot);
+            pnlHeader.Controls.Add(lblTitulo);
+            pnlHeader.Controls.Add(pnlHLine);
+            pnlHeader.Controls.Add(btnHeaderCancelar);
+            // btnHeaderAlmacenes y btnHeaderAgentes: funciones listas, botones ocultos por ahora
+            // pnlHeader.Controls.Add(btnHeaderAlmacenes);
+            // pnlHeader.Controls.Add(btnHeaderAgentes);
+
+            // ════════════════════════════════════════════════════════════════
+            // TARJETA — ARCHIVO EXCEL
+            // ════════════════════════════════════════════════════════════════
+            pnlExcel.BackColor = UITheme.BgCard;
+            pnlExcel.Location  = new System.Drawing.Point(12, 64);
+            pnlExcel.Size      = new System.Drawing.Size(1146, 64);
+            pnlExcel.Anchor    = System.Windows.Forms.AnchorStyles.Top
                                | System.Windows.Forms.AnchorStyles.Left
                                | System.Windows.Forms.AnchorStyles.Right;
-            grpExcel.Controls.AddRange(new System.Windows.Forms.Control[] {
-                txtRutaExcel, btnExaminar, btnCargarExcel
-            });
+            // 1px border via Paint
+            pnlExcel.Paint += (s, pe) =>
+            {
+                var c = (System.Windows.Forms.Control)s;
+                using (var pen = new System.Drawing.Pen(UITheme.Border, 1))
+                    pe.Graphics.DrawRectangle(pen, 0, 0, c.Width - 1, c.Height - 1);
+            };
 
-            txtRutaExcel.Font     = font9;
-            txtRutaExcel.Location = new System.Drawing.Point(10, 25);
-            txtRutaExcel.Size     = new System.Drawing.Size(820, 25);
+            var lblExcelSection = new System.Windows.Forms.Label();
+            lblExcelSection.Text      = "ARCHIVO EXCEL  —  A:Cliente  B:Producto  C:Cant  D:ObsMov  E:ObsDoc  F:Precio  G:Serie  H:Referencia";
+            lblExcelSection.Font      = UITheme.FntSection;
+            lblExcelSection.ForeColor = UITheme.TextMuted;
+            lblExcelSection.BackColor = System.Drawing.Color.Transparent;
+            lblExcelSection.AutoSize  = true;
+            lblExcelSection.Location  = new System.Drawing.Point(12, 7);
+
+            UITheme.StyleInput(txtRutaExcel);
+            txtRutaExcel.Location = new System.Drawing.Point(12, 30);
+            txtRutaExcel.Size     = new System.Drawing.Size(758, 26);
             txtRutaExcel.Anchor   = System.Windows.Forms.AnchorStyles.Top
                                   | System.Windows.Forms.AnchorStyles.Left
                                   | System.Windows.Forms.AnchorStyles.Right;
             txtRutaExcel.Text     = "";
 
-            btnExaminar.Font     = font9b;
-            btnExaminar.Location = new System.Drawing.Point(840, 24);
-            btnExaminar.Size     = new System.Drawing.Size(100, 27);
+            UITheme.StyleRoundBtn(btnExaminar, UITheme.Neutral);
             btnExaminar.Text     = "Examinar...";
+            btnExaminar.Location = new System.Drawing.Point(778, 28);
+            btnExaminar.Size     = new System.Drawing.Size(148, 30);
             btnExaminar.Anchor   = System.Windows.Forms.AnchorStyles.Top
                                  | System.Windows.Forms.AnchorStyles.Right;
             btnExaminar.Click   += new System.EventHandler(this.btnExaminar_Click);
 
-            btnCargarExcel.BackColor = System.Drawing.Color.SteelBlue;
-            btnCargarExcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btnCargarExcel.Font      = font9b;
-            btnCargarExcel.ForeColor = System.Drawing.Color.White;
-            btnCargarExcel.Location  = new System.Drawing.Point(948, 24);
-            btnCargarExcel.Size      = new System.Drawing.Size(192, 27);
-            btnCargarExcel.Text      = "▶ Cargar Archivo Excel";
-            btnCargarExcel.Anchor    = System.Windows.Forms.AnchorStyles.Top
-                                     | System.Windows.Forms.AnchorStyles.Right;
-            btnCargarExcel.Click    += new System.EventHandler(this.btnCargarExcel_Click);
+            UITheme.StyleRoundBtn(btnCargarExcel, UITheme.Accent);
+            btnCargarExcel.Text     = "▶  Cargar Excel";
+            btnCargarExcel.Location = new System.Drawing.Point(934, 28);
+            btnCargarExcel.Size     = new System.Drawing.Size(200, 30);
+            btnCargarExcel.Anchor   = System.Windows.Forms.AnchorStyles.Top
+                                    | System.Windows.Forms.AnchorStyles.Right;
+            btnCargarExcel.Click   += new System.EventHandler(this.btnCargarExcel_Click);
 
-            // ── Encabezado del Documento ─────────────────────────────────────────
-            grpEncabezado.Font      = font9b;
-            grpEncabezado.ForeColor = System.Drawing.Color.DarkBlue;
-            grpEncabezado.Location  = new System.Drawing.Point(10, 124);
-            grpEncabezado.Size      = new System.Drawing.Size(1150, 145);
-            grpEncabezado.Text      = "Encabezado del Documento";
-            grpEncabezado.Anchor    = System.Windows.Forms.AnchorStyles.Top
+            pnlExcel.Controls.Add(lblExcelSection);
+            pnlExcel.Controls.Add(txtRutaExcel);
+            pnlExcel.Controls.Add(btnExaminar);
+            pnlExcel.Controls.Add(btnCargarExcel);
+
+            // ════════════════════════════════════════════════════════════════
+            // TARJETA — ENCABEZADO DEL DOCUMENTO
+            // ════════════════════════════════════════════════════════════════
+            pnlEncabezado.BackColor = UITheme.BgCard;
+            pnlEncabezado.Location  = new System.Drawing.Point(12, 138);
+            pnlEncabezado.Size      = new System.Drawing.Size(1146, 72);
+            pnlEncabezado.Anchor    = System.Windows.Forms.AnchorStyles.Top
+                                    | System.Windows.Forms.AnchorStyles.Left
+                                    | System.Windows.Forms.AnchorStyles.Right;
+            pnlEncabezado.Paint += (s, pe) =>
+            {
+                var c = (System.Windows.Forms.Control)s;
+                using (var pen = new System.Drawing.Pen(UITheme.Border, 1))
+                    pe.Graphics.DrawRectangle(pen, 0, 0, c.Width - 1, c.Height - 1);
+            };
+
+            var lblEncSection = new System.Windows.Forms.Label();
+            lblEncSection.Text      = "ENCABEZADO DEL DOCUMENTO";
+            lblEncSection.Font      = UITheme.FntSection;
+            lblEncSection.ForeColor = UITheme.TextMuted;
+            lblEncSection.BackColor = System.Drawing.Color.Transparent;
+            lblEncSection.AutoSize  = true;
+            lblEncSection.Location  = new System.Drawing.Point(12, 7);
+
+            // Concepto
+            lblConcepto.Text      = "Concepto";
+            lblConcepto.Font      = UITheme.FntSm;
+            lblConcepto.ForeColor = UITheme.TextDim;
+            lblConcepto.BackColor = System.Drawing.Color.Transparent;
+            lblConcepto.AutoSize  = true;
+            lblConcepto.Location  = new System.Drawing.Point(12, 22);
+
+            cbConcepto.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            UITheme.StyleCombo(cbConcepto);
+            cbConcepto.Location = new System.Drawing.Point(12, 38);
+            cbConcepto.Size     = new System.Drawing.Size(340, 26);
+
+            // Fecha
+            lblFecha.Text      = "Fecha  (aaaa/mm/dd)";
+            lblFecha.Font      = UITheme.FntSm;
+            lblFecha.ForeColor = UITheme.TextDim;
+            lblFecha.BackColor = System.Drawing.Color.Transparent;
+            lblFecha.AutoSize  = true;
+            lblFecha.Location  = new System.Drawing.Point(362, 22);
+
+            UITheme.StyleInput(txtFecha);
+            txtFecha.Location = new System.Drawing.Point(362, 38);
+            txtFecha.Size     = new System.Drawing.Size(144, 26);
+            txtFecha.Text     = System.DateTime.Now.ToString("yyyy/MM/dd");
+
+            // Almacén
+            lblAlmacen.Text      = "Almacén";
+            lblAlmacen.Font      = UITheme.FntSm;
+            lblAlmacen.ForeColor = UITheme.TextDim;
+            lblAlmacen.BackColor = System.Drawing.Color.Transparent;
+            lblAlmacen.AutoSize  = true;
+            lblAlmacen.Location  = new System.Drawing.Point(516, 22);
+
+            cbAlmacen.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            UITheme.StyleCombo(cbAlmacen);
+            cbAlmacen.Location = new System.Drawing.Point(516, 38);
+            cbAlmacen.Size     = new System.Drawing.Size(618, 26);
+            cbAlmacen.Anchor   = System.Windows.Forms.AnchorStyles.Top
+                               | System.Windows.Forms.AnchorStyles.Left
+                               | System.Windows.Forms.AnchorStyles.Right;
+
+            pnlEncabezado.Controls.AddRange(new System.Windows.Forms.Control[] {
+                lblEncSection,
+                lblConcepto, cbConcepto,
+                lblFecha,    txtFecha,
+                lblAlmacen,  cbAlmacen
+            });
+
+            // ════════════════════════════════════════════════════════════════
+            // GRID DE MOVIMIENTOS
+            // ════════════════════════════════════════════════════════════════
+            UITheme.StyleGrid(dgvMovimientos);
+            dgvMovimientos.Location = new System.Drawing.Point(12, 220);
+            dgvMovimientos.Size     = new System.Drawing.Size(1146, 400);
+            dgvMovimientos.Anchor   = System.Windows.Forms.AnchorStyles.Top
+                                    | System.Windows.Forms.AnchorStyles.Bottom
                                     | System.Windows.Forms.AnchorStyles.Left
                                     | System.Windows.Forms.AnchorStyles.Right;
 
-            System.Action<System.Windows.Forms.Label, string, int, int> setLbl =
-                (l, t, x, y) => {
-                    l.AutoSize  = true;
-                    l.Font      = font9b;
-                    l.ForeColor = System.Drawing.Color.Black;
-                    l.Location  = new System.Drawing.Point(x, y);
-                    l.Text      = t;
-                };
+            // ════════════════════════════════════════════════════════════════
+            // BARRA INFERIOR DE ACCIÓN
+            // ════════════════════════════════════════════════════════════════
+            pnlBottomBar.BackColor = UITheme.BgBottom;
+            pnlBottomBar.Location  = new System.Drawing.Point(0, 626);
+            pnlBottomBar.Size      = new System.Drawing.Size(1170, 118);
+            pnlBottomBar.Anchor    = System.Windows.Forms.AnchorStyles.Bottom
+                                   | System.Windows.Forms.AnchorStyles.Left
+                                   | System.Windows.Forms.AnchorStyles.Right;
+            // 1px border en la parte superior
+            pnlBottomBar.Paint += (s, pe) =>
+            {
+                var c = (System.Windows.Forms.Control)s;
+                using (var pen = new System.Drawing.Pen(UITheme.Border, 1))
+                    pe.Graphics.DrawLine(pen, 0, 0, c.Width, 0);
+            };
 
-            // Fila 1
-            setLbl(lblConcepto, "Concepto:", 10, 22);
-            cbConcepto.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cbConcepto.Font          = font9;
-            cbConcepto.Location      = new System.Drawing.Point(10, 40);
-            cbConcepto.Size          = new System.Drawing.Size(260, 25);
+            // Progress bar — full width, top of bar
+            pbProgreso.Location  = new System.Drawing.Point(0, 0);
+            pbProgreso.Size      = new System.Drawing.Size(1170, 3);
+            pbProgreso.Anchor    = System.Windows.Forms.AnchorStyles.Top
+                                 | System.Windows.Forms.AnchorStyles.Left
+                                 | System.Windows.Forms.AnchorStyles.Right;
+            pbProgreso.Minimum   = 0;
+            pbProgreso.Value     = 0;
+            pbProgreso.Style     = System.Windows.Forms.ProgressBarStyle.Continuous;
+            pbProgreso.ForeColor = UITheme.Accent;
 
-            setLbl(lblFecha, "Fecha (aaaa/mm/dd):", 280, 22);
-            txtFecha.Font     = font9;
-            txtFecha.Location = new System.Drawing.Point(280, 40);
-            txtFecha.Size     = new System.Drawing.Size(130, 25);
-            txtFecha.Text     = System.DateTime.Now.ToString("yyyy/MM/dd");
-
-            setLbl(lblSerie, "Serie:", 420, 22);
-            txtSerie.Font     = font9;
-            txtSerie.Location = new System.Drawing.Point(420, 40);
-            txtSerie.Size     = new System.Drawing.Size(55, 25);
-            txtSerie.Text     = "";
-
-            setLbl(lblFolio, "Folio:", 485, 22);
-            txtFolio.Font     = font9;
-            txtFolio.Location = new System.Drawing.Point(485, 40);
-            txtFolio.Size     = new System.Drawing.Size(80, 25);
-            txtFolio.Text     = "0";
-
-            btnSiguienteFolio.Font     = font9;
-            btnSiguienteFolio.Location = new System.Drawing.Point(573, 38);
-            btnSiguienteFolio.Size     = new System.Drawing.Size(120, 27);
-            btnSiguienteFolio.Text     = "Sig. Folio";
-            btnSiguienteFolio.Click   += new System.EventHandler(this.btnSiguienteFolio_Click);
-
-            setLbl(lblReferencia, "Referencia:", 703, 22);
-            txtReferencia.Font     = font9;
-            txtReferencia.Location = new System.Drawing.Point(703, 40);
-            txtReferencia.Size     = new System.Drawing.Size(150, 25);
-
-            setLbl(lblObservaciones, "Observaciones:", 862, 22);
-            txtObservaciones.Font     = font9;
-            txtObservaciones.Location = new System.Drawing.Point(862, 40);
-            txtObservaciones.Size     = new System.Drawing.Size(275, 25);
-
-            // Fila 2
-            setLbl(lblCliente, "Cliente / Proveedor:", 10, 78);
-            cbCliente.Font     = font9;
-            cbCliente.Location = new System.Drawing.Point(10, 96);
-            cbCliente.Size     = new System.Drawing.Size(340, 25);
-            cbCliente.SelectedIndexChanged += new System.EventHandler(this.cbCliente_SelectedIndexChanged);
-
-            setLbl(lblAgente, "Agente:", 360, 78);
-            cbAgente.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cbAgente.Font          = font9;
-            cbAgente.Location      = new System.Drawing.Point(360, 96);
-            cbAgente.Size          = new System.Drawing.Size(240, 25);
-
-            setLbl(lblMoneda, "Moneda:", 610, 78);
-            cbMoneda.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cbMoneda.Font          = font9;
-            cbMoneda.Location      = new System.Drawing.Point(610, 96);
-            cbMoneda.Size          = new System.Drawing.Size(160, 25);
-
-            setLbl(lblTipoCambio, "Tipo de Cambio:", 780, 78);
-            txtTipoCambio.Font     = font9;
-            txtTipoCambio.Location = new System.Drawing.Point(780, 96);
-            txtTipoCambio.Size     = new System.Drawing.Size(90, 25);
-            txtTipoCambio.Text     = "1.0";
-
-            setLbl(lblAlmacen, "Almacen:", 880, 78);
-            cbAlmacen.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cbAlmacen.Font          = font9;
-            cbAlmacen.Location      = new System.Drawing.Point(880, 96);
-            cbAlmacen.Size          = new System.Drawing.Size(257, 25);
-
-            grpEncabezado.Controls.AddRange(new System.Windows.Forms.Control[] {
-                lblConcepto,   cbConcepto,
-                lblFecha,      txtFecha,
-                lblSerie,      txtSerie,
-                lblFolio,      txtFolio,      btnSiguienteFolio,
-                lblReferencia, txtReferencia,
-                lblObservaciones, txtObservaciones,
-                lblCliente,    cbCliente,
-                lblAgente,     cbAgente,
-                lblMoneda,     cbMoneda,
-                lblTipoCambio, txtTipoCambio,
-                lblAlmacen,    cbAlmacen
-            });
-
-            // ── Grid de movimientos ──────────────────────────────────────────────
-            dgvMovimientos.Location                          = new System.Drawing.Point(10, 278);
-            dgvMovimientos.Size                              = new System.Drawing.Size(1150, 334);
-            dgvMovimientos.Anchor                            = System.Windows.Forms.AnchorStyles.Top
-                                                             | System.Windows.Forms.AnchorStyles.Bottom
-                                                             | System.Windows.Forms.AnchorStyles.Left
-                                                             | System.Windows.Forms.AnchorStyles.Right;
-            dgvMovimientos.ReadOnly                          = true;
-            dgvMovimientos.AllowUserToAddRows                = false;
-            dgvMovimientos.AutoSizeColumnsMode               = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dgvMovimientos.BackgroundColor                   = System.Drawing.Color.White;
-            dgvMovimientos.ColumnHeadersDefaultCellStyle.Font = font9b;
-            dgvMovimientos.DefaultCellStyle.Font             = font9;
-            dgvMovimientos.RowHeadersVisible                 = false;
-            dgvMovimientos.SelectionMode                     = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            dgvMovimientos.BorderStyle                       = System.Windows.Forms.BorderStyle.Fixed3D;
-
-            // ── Barra de progreso (delgada, justo bajo el grid) ──────────────────
-            pbProgreso.Location = new System.Drawing.Point(10, 618);
-            pbProgreso.Size     = new System.Drawing.Size(1150, 6);
-            pbProgreso.Anchor   = System.Windows.Forms.AnchorStyles.Bottom
-                                | System.Windows.Forms.AnchorStyles.Left
-                                | System.Windows.Forms.AnchorStyles.Right;
-            pbProgreso.Minimum  = 0;
-            pbProgreso.Value    = 0;
-            pbProgreso.Style    = System.Windows.Forms.ProgressBarStyle.Continuous;
-
-            // ── Info / controles inferiores ──────────────────────────────────────
+            // Total líneas
             lblTotalLineas.AutoSize  = true;
-            lblTotalLineas.Font      = font9;
-            lblTotalLineas.ForeColor = System.Drawing.Color.DimGray;
-            lblTotalLineas.Location  = new System.Drawing.Point(10, 630);
-            lblTotalLineas.Anchor    = System.Windows.Forms.AnchorStyles.Bottom
-                                     | System.Windows.Forms.AnchorStyles.Left;
-            lblTotalLineas.Text      = "Total lineas: 0";
+            lblTotalLineas.Font      = UITheme.FntSm;
+            lblTotalLineas.ForeColor = UITheme.TextDim;
+            lblTotalLineas.Location  = new System.Drawing.Point(16, 10);
+            lblTotalLineas.BackColor = System.Drawing.Color.Transparent;
+            lblTotalLineas.Text      = "Total líneas: 0";
 
+            // CheckBox Una Sola Factura
+            UITheme.StyleCheck(chkUnaSolaFactura);
             chkUnaSolaFactura.AutoSize  = true;
-            chkUnaSolaFactura.Font      = font9b;
-            chkUnaSolaFactura.Location  = new System.Drawing.Point(10, 652);
-            chkUnaSolaFactura.Anchor    = System.Windows.Forms.AnchorStyles.Bottom
-                                        | System.Windows.Forms.AnchorStyles.Left;
-            chkUnaSolaFactura.Text      = "Una Sola Factura (todos los movimientos en un documento)";
+            chkUnaSolaFactura.Location  = new System.Drawing.Point(16, 30);
+            chkUnaSolaFactura.BackColor = System.Drawing.Color.Transparent;
+            chkUnaSolaFactura.Text      = "Una Sola Factura — todos los movimientos en un único documento";
 
-            btnCargaMasiva.BackColor = System.Drawing.Color.FromArgb(0, 150, 50);
-            btnCargaMasiva.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btnCargaMasiva.Font      = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
-            btnCargaMasiva.ForeColor = System.Drawing.Color.White;
-            btnCargaMasiva.Location  = new System.Drawing.Point(10, 682);
-            btnCargaMasiva.Size      = new System.Drawing.Size(200, 42);
-            btnCargaMasiva.Anchor    = System.Windows.Forms.AnchorStyles.Bottom
-                                     | System.Windows.Forms.AnchorStyles.Left;
-            btnCargaMasiva.Text      = "▶ CARGA MASIVA";
-            btnCargaMasiva.Click    += new System.EventHandler(this.btnCargaMasiva_Click);
+            // Botón CARGA MASIVA — grande y prominente
+            UITheme.StyleRoundBtn(btnCargaMasiva, UITheme.Success, large: true);
+            btnCargaMasiva.Radius   = 8;
+            btnCargaMasiva.Text     = "▶  CARGA MASIVA";
+            btnCargaMasiva.Location = new System.Drawing.Point(16, 58);
+            btnCargaMasiva.Size     = new System.Drawing.Size(234, 48);
+            btnCargaMasiva.Anchor   = System.Windows.Forms.AnchorStyles.Bottom
+                                    | System.Windows.Forms.AnchorStyles.Left;
+            btnCargaMasiva.Click   += new System.EventHandler(this.btnCargaMasiva_Click);
 
-            btnGuardar.BackColor = System.Drawing.Color.FromArgb(0, 100, 200);
-            btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btnGuardar.Font      = font9b;
-            btnGuardar.ForeColor = System.Drawing.Color.White;
-            btnGuardar.Location  = new System.Drawing.Point(220, 682);
-            btnGuardar.Size      = new System.Drawing.Size(170, 42);
-            btnGuardar.Anchor    = System.Windows.Forms.AnchorStyles.Bottom
-                                 | System.Windows.Forms.AnchorStyles.Left;
-            btnGuardar.Text      = "Guardar Comercial";
-            btnGuardar.Click    += new System.EventHandler(this.btnGuardar_Click);
-
-            btnSalir.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btnSalir.Font      = font9;
-            btnSalir.Location  = new System.Drawing.Point(960, 682);
-            btnSalir.Size      = new System.Drawing.Size(200, 42);
-            btnSalir.Anchor    = System.Windows.Forms.AnchorStyles.Bottom
-                               | System.Windows.Forms.AnchorStyles.Right;
-            btnSalir.Text      = "Salir / Cerrar Empresa";
-            btnSalir.Click    += new System.EventHandler(this.btnSalir_Click);
-
+            // Estado — texto de resultado
             lblEstado.AutoSize  = false;
-            lblEstado.Font      = font9b;
-            lblEstado.Location  = new System.Drawing.Point(400, 695);
-            lblEstado.Size      = new System.Drawing.Size(540, 20);
+            lblEstado.Font      = UITheme.FntSm;
+            lblEstado.ForeColor = UITheme.TextDim;
+            lblEstado.BackColor = System.Drawing.Color.Transparent;
+            lblEstado.Location  = new System.Drawing.Point(264, 72);
+            lblEstado.Size      = new System.Drawing.Size(680, 20);
             lblEstado.Anchor    = System.Windows.Forms.AnchorStyles.Bottom
                                 | System.Windows.Forms.AnchorStyles.Left
                                 | System.Windows.Forms.AnchorStyles.Right;
             lblEstado.Text      = "";
 
-            // ── Form ─────────────────────────────────────────────────────────────
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode       = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize          = new System.Drawing.Size(1170, 735);
-            this.MinimumSize         = new System.Drawing.Size(1186, 774);
-            this.WindowState         = System.Windows.Forms.FormWindowState.Maximized;
-            this.StartPosition       = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Name                = "FrmPrincipal";
-            this.Text                = "Comercial Masivo 2.0 — Carga de Documentos";
+            // Botón Salir — derecha
+            UITheme.StyleRoundBtn(btnSalir, UITheme.Neutral);
+            btnSalir.Radius   = 8;
+            btnSalir.Text     = "Salir / Cerrar Empresa";
+            btnSalir.Location = new System.Drawing.Point(910, 58);
+            btnSalir.Size     = new System.Drawing.Size(220, 48);
+            btnSalir.Anchor   = System.Windows.Forms.AnchorStyles.Bottom
+                              | System.Windows.Forms.AnchorStyles.Right;
+            btnSalir.Click   += new System.EventHandler(this.btnSalir_Click);
 
-            this.Controls.AddRange(new System.Windows.Forms.Control[] {
-                pnlHeader,
-                grpExcel,
-                grpEncabezado,
-                dgvMovimientos,
+            pnlBottomBar.Controls.AddRange(new System.Windows.Forms.Control[] {
                 pbProgreso,
                 lblTotalLineas,
                 chkUnaSolaFactura,
                 btnCargaMasiva,
-                btnGuardar,
-                btnSalir,
-                lblEstado
+                lblEstado,
+                btnSalir
+            });
+
+            // ════════════════════════════════════════════════════════════════
+            // FORM
+            // ════════════════════════════════════════════════════════════════
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode       = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize          = new System.Drawing.Size(1170, 744);
+            this.MinimumSize         = new System.Drawing.Size(1000, 700);
+            this.WindowState         = System.Windows.Forms.FormWindowState.Maximized;
+            this.StartPosition       = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Name                = "FrmPrincipal";
+            this.Text                = "Comercial Masivo — Carga de Documentos";
+
+            this.Controls.AddRange(new System.Windows.Forms.Control[] {
+                pnlHeader,
+                pnlExcel,
+                pnlEncabezado,
+                dgvMovimientos,
+                pnlBottomBar
             });
         }
     }

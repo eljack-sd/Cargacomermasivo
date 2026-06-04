@@ -11,6 +11,7 @@ namespace CargaComerMasivo
         public FrmAgentes()
         {
             InitializeComponent();
+            UITheme.AplicarIconoForm(this);
             CargarLista();
         }
 

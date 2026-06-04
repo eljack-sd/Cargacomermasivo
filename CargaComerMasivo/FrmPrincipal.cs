@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 using OfficeOpenXml;
 
@@ -11,43 +10,68 @@ namespace CargaComerMasivo
 {
     public partial class FrmPrincipal : Form
     {
-        // Columnas del Excel (base 0) — layout real confirmado por el usuario
-        private const int COL_CLIENTE          = 0;   // A: Codigo Cliente/Proveedor
-        private const int COL_CODIGO_PRODUCTO  = 1;   // B: Clave Producto
-        private const int COL_UNIDADES         = 2;   // C: Cantidad
-        private const int COL_OBS_MOVIMIENTO   = 3;   // D: Observaciones del Movimiento
-        private const int COL_OBS_DOCUMENTO    = 4;   // E: Observaciones del Documento
-        private const int COL_SUBTOTAL         = 5;   // F: Subtotal (precio unitario)
-        private const int COL_SERIE            = 6;   // G: Serie
+        // ─────────────────────────────────────────────────────────────────────
+        // COLUMNAS DEL EXCEL (base 0)
+        // A: Código cliente/proveedor
+        // B: Clave producto
+        // C: Cantidad
+        // D: Observaciones del movimiento
+        // E: Observaciones del documento
+        // F: Subtotal (precio unitario)
+        // G: Serie          (opcional — si vacía, se sube sin serie)
+        // H: Referencia     (opcional — si vacía, se sube sin referencia)
+        //
+        // Regla de documentos:
+        //   Filas contiguas sin espacio = un solo documento (varios movimientos)
+        //   Fila vacía = separador → el siguiente bloque es un documento nuevo
+        // ─────────────────────────────────────────────────────────────────────
+        private const int COL_CLIENTE         = 0;
+        private const int COL_CODIGO_PRODUCTO = 1;
+        private const int COL_UNIDADES        = 2;
+        private const int COL_OBS_MOVIMIENTO  = 3;
+        private const int COL_OBS_DOCUMENTO   = 4;
+        private const int COL_SUBTOTAL        = 5;
+        private const int COL_SERIE           = 6;
+        private const int COL_REFERENCIA      = 7;   // H: Referencia del documento
 
-        private DataTable dtExcel  = new DataTable();
-        private int       nIdCteProv = 0;   // Solo para validacion GUI
+        private DataTable dtExcel = new DataTable();
 
         public FrmPrincipal()
         {
             InitializeComponent();
             CargarCombos();
+            // Posicionar botones del header al cargar (DockStyle.Top no tiene ancho aún en InitializeComponent)
+            this.Load += (s, e) => AjustarBotonesHeader();
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // CARGA DE COMBOS AL INICIAR — usa SQL Server directamente.
+        // Reposicionar botones del header pegados a la derecha.
+        // Se llama en Load y en cada Resize del pnlHeader.
+        // ─────────────────────────────────────────────────────────────────────
+        private void AjustarBotonesHeader()
+        {
+            if (pnlHeader == null || pnlHeader.ClientSize.Width <= 0) return;
+            int right = pnlHeader.ClientSize.Width - 14;
+            // Solo btnHeaderCancelar visible; Almacenes y Agentes están ocultos por ahora
+            btnHeaderCancelar.Left = right - btnHeaderCancelar.Width;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // CARGA DE COMBOS — solo Conceptos y Almacenes.
+        // Moneda y Agente se resuelven por cliente vía SQL al crear cada documento.
         // ─────────────────────────────────────────────────────────────────────
         private void CargarCombos()
         {
             if (string.IsNullOrEmpty(Program.ConnStrEmpresa))
             {
                 MessageBox.Show(
-                    "No se tiene conexion SQL a la empresa.\n\n" +
-                    "Selecciona la empresa desde el combo y vuelve a intentarlo.",
-                    "Sin conexion SQL", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "No se tiene conexión SQL a la empresa.\n\n" +
+                    "Selecciona la empresa desde FrmConexion y vuelve a intentarlo.",
+                    "Sin conexión SQL", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
-            try { CargarConceptos(); }          catch { }
-            try { CargarMonedas(); }             catch { }
-            try { CargarAlmacenes(); }           catch { }
-            try { CargarClientesProveedores(); } catch { }
-            try { CargarAgentes(); }             catch { }
+            try { CargarConceptos(); } catch { }
+            try { CargarAlmacenes(); } catch { }
         }
 
         private void CargarConceptos()
@@ -66,31 +90,10 @@ namespace CargaComerMasivo
                         int    id  = r.IsDBNull(0) ? 0  : Convert.ToInt32(r[0]);
                         string cod = r.IsDBNull(1) ? "" : r[1].ToString().Trim();
                         string nom = r.IsDBNull(2) ? "" : r[2].ToString().Trim();
-                        // Code = CCODIGOCONCEPTO (el string que fAltaDocumento necesita)
                         cbConcepto.Items.Add(new ItemCombo(id, cod + " - " + nom, cod));
                     }
             }
             if (cbConcepto.Items.Count > 0) cbConcepto.SelectedIndex = 0;
-        }
-
-        private void CargarMonedas()
-        {
-            cbMoneda.Items.Clear();
-            using (var conn = new SqlConnection(Program.ConnStrEmpresa))
-            {
-                conn.Open();
-                using (var cmd = new SqlCommand(
-                    "SELECT CIDMONEDA, CNOMBREMONEDA FROM admMonedas ORDER BY CIDMONEDA",
-                    conn))
-                using (var r = cmd.ExecuteReader())
-                    while (r.Read())
-                    {
-                        int    id  = r.IsDBNull(0) ? 0  : Convert.ToInt32(r[0]);
-                        string nom = r.IsDBNull(1) ? "" : r[1].ToString().Trim();
-                        cbMoneda.Items.Add(new ItemCombo(id, nom));
-                    }
-            }
-            if (cbMoneda.Items.Count > 0) cbMoneda.SelectedIndex = 0;
         }
 
         private void CargarAlmacenes()
@@ -109,59 +112,10 @@ namespace CargaComerMasivo
                         int    id  = r.IsDBNull(0) ? 0  : Convert.ToInt32(r[0]);
                         string cod = r.IsDBNull(1) ? "" : r[1].ToString().Trim();
                         string nom = r.IsDBNull(2) ? "" : r[2].ToString().Trim();
-                        // Code = CCODIGOALMACEN (el string que tMovimiento necesita)
                         cbAlmacen.Items.Add(new ItemCombo(id, cod + " - " + nom, cod));
                     }
             }
             if (cbAlmacen.Items.Count > 0) cbAlmacen.SelectedIndex = 0;
-        }
-
-        private void CargarClientesProveedores()
-        {
-            cbCliente.Items.Clear();
-            using (var conn = new SqlConnection(Program.ConnStrEmpresa))
-            {
-                conn.Open();
-                using (var cmd = new SqlCommand(
-                    "SELECT CIDCLIENTEPROVEEDOR, CCODIGOCLIENTE, CRAZONSOCIAL " +
-                    "FROM admClientes " +
-                    "WHERE CESTATUS = 0 " +
-                    "ORDER BY CCODIGOCLIENTE",
-                    conn))
-                using (var r = cmd.ExecuteReader())
-                    while (r.Read())
-                    {
-                        int    id  = r.IsDBNull(0) ? 0  : Convert.ToInt32(r[0]);
-                        string cod = r.IsDBNull(1) ? "" : r[1].ToString().Trim();
-                        string nom = r.IsDBNull(2) ? "" : r[2].ToString().Trim();
-                        if (!string.IsNullOrEmpty(cod))
-                            cbCliente.Items.Add(new ItemCteCombo(cod, nom, id));
-                    }
-            }
-        }
-
-        private void CargarAgentes()
-        {
-            cbAgente.Items.Clear();
-            cbAgente.Items.Add(new ItemCombo(0, "(Sin agente)", ""));
-            using (var conn = new SqlConnection(Program.ConnStrEmpresa))
-            {
-                conn.Open();
-                using (var cmd = new SqlCommand(
-                    "SELECT CIDAGENTE, CCODIGOAGENTE, CNOMBREAGENTE " +
-                    "FROM admAgentes ORDER BY CCODIGOAGENTE",
-                    conn))
-                using (var r = cmd.ExecuteReader())
-                    while (r.Read())
-                    {
-                        int    id  = r.IsDBNull(0) ? 0  : Convert.ToInt32(r[0]);
-                        string cod = r.IsDBNull(1) ? "" : r[1].ToString().Trim();
-                        string nom = r.IsDBNull(2) ? "" : r[2].ToString().Trim();
-                        // Code = CCODIGOAGENTE (el string que tDocumento necesita)
-                        cbAgente.Items.Add(new ItemCombo(id, cod + " - " + nom, cod));
-                    }
-            }
-            cbAgente.SelectedIndex = 0;
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -195,29 +149,26 @@ namespace CargaComerMasivo
             {
                 using (var pkg = new ExcelPackage(new FileInfo(txtRutaExcel.Text)))
                 {
-                    var ws = pkg.Workbook.Worksheets[1]; // EPPlus 4 es 1-based
-                    dtExcel = new DataTable();
-
+                    var ws   = pkg.Workbook.Worksheets[1]; // EPPlus 4 — base 1
+                    dtExcel  = new DataTable();
                     int cols = ws.Dimension.Columns;
                     int rows = ws.Dimension.Rows;
 
                     for (int c = 1; c <= cols; c++)
                         dtExcel.Columns.Add(ws.Cells[1, c].Text ?? ("Col" + c));
 
-                    // Buscar la ultima fila con datos para no incluir filas vacias del final
-                    int ultimaFilaDatos = 1;
+                    // Primero localizamos la última fila que tiene algún dato.
+                    // Las filas en blanco INTERMEDIAS se conservan porque son
+                    // separadores de documento (fila vacía = nuevo documento).
+                    int ultimaFila = 1;
                     for (int r = 2; r <= rows; r++)
-                    {
                         for (int c = 1; c <= cols; c++)
-                        {
                             if (!string.IsNullOrEmpty(ws.Cells[r, c].Text))
-                            { ultimaFilaDatos = r; break; }
-                        }
-                    }
+                            { ultimaFila = r; break; }
 
-                    // Cargar hasta la ultima fila con datos, CONSERVANDO filas vacias
-                    // intermedias (son los separadores de documentos)
-                    for (int r = 2; r <= ultimaFilaDatos; r++)
+                    // Cargar todas las filas hasta la última con dato,
+                    // incluyendo las filas en blanco intermedias (separadores).
+                    for (int r = 2; r <= ultimaFila; r++)
                     {
                         var row = dtExcel.NewRow();
                         for (int c = 1; c <= cols; c++)
@@ -227,14 +178,11 @@ namespace CargaComerMasivo
                 }
 
                 dgvMovimientos.DataSource = dtExcel;
-                int lineasConDatos = 0;
-                foreach (System.Data.DataRow dr in dtExcel.Rows)
-                    if (!string.IsNullOrEmpty(dr[0].ToString().Trim())) lineasConDatos++;
-                lblTotalLineas.Text = "Total lineas: " + lineasConDatos;
-                lblEstado.Text              = "Excel cargado correctamente (" + dtExcel.Rows.Count + " lineas)";
-                lblEstado.ForeColor         = UITheme.Success;
-                pbProgreso.Value            = 0;
-                pbProgreso.Maximum          = dtExcel.Rows.Count > 0 ? dtExcel.Rows.Count : 1;
+                lblTotalLineas.Text        = "Total líneas: " + dtExcel.Rows.Count;
+                lblEstado.Text             = "Excel cargado (" + dtExcel.Rows.Count + " líneas)";
+                lblEstado.ForeColor        = UITheme.Success;
+                pbProgreso.Value           = 0;
+                pbProgreso.Maximum         = dtExcel.Rows.Count > 0 ? dtExcel.Rows.Count : 1;
             }
             catch (Exception ex)
             {
@@ -246,158 +194,19 @@ namespace CargaComerMasivo
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // SIGUIENTE FOLIO
-        // ─────────────────────────────────────────────────────────────────────
-        private void btnSiguienteFolio_Click(object sender, EventArgs e)
-        {
-            if (cbConcepto.SelectedItem == null) return;
-
-            // fSiguienteFolio(aCodigoConcepto:CADENA, aSerie:CADENA ref, aFolio:DOUBLE ref)
-            // El SDK rellena aSerie y aFolio con los valores del siguiente folio disponible.
-            string codConcepto = ((ItemCombo)cbConcepto.SelectedItem).Code;
-            if (string.IsNullOrEmpty(codConcepto))
-            {
-                MessageBox.Show("El concepto seleccionado no tiene codigo valido.", "Aviso",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var    sbSerie = new StringBuilder(64);
-            sbSerie.Append(txtSerie.Text.Trim());   // pasar la serie actual como entrada
-            double folio   = 0;
-
-            int res = SdkComercial.fSiguienteFolio(codConcepto, sbSerie, ref folio);
-            if (res == 0 && folio > 0)
-            {
-                txtFolio.Text = ((long)folio).ToString();
-                string serieDevuelta = sbSerie.ToString().Trim();
-                if (!string.IsNullOrEmpty(serieDevuelta))
-                    txtSerie.Text = serieDevuelta;
-            }
-            else
-            {
-                MessageBox.Show(
-                    "No se pudo obtener el siguiente folio.\n" +
-                    "Codigo: " + (res != 0 ? SdkComercial.DescribirError(res) : "Folio=0"),
-                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // BUSCAR CLIENTE AL SELECCIONAR EN EL COMBO
-        // ─────────────────────────────────────────────────────────────────────
-        private void cbCliente_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var item = cbCliente.SelectedItem as ItemCteCombo;
-            if (item == null) return;
-
-            nIdCteProv = item.Id;
-
-            if (nIdCteProv <= 0)
-            {
-                MessageBox.Show("No se encontro el cliente con clave: " + item.Codigo, "Aviso",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                nIdCteProv = 0;
-                return;
-            }
-
-            // Leer moneda y agente del cliente desde admClientes
-            if (!string.IsNullOrEmpty(Program.ConnStrEmpresa))
-            {
-                try
-                {
-                    using (var conn = new SqlConnection(Program.ConnStrEmpresa))
-                    {
-                        conn.Open();
-                        using (var cmd = new SqlCommand(
-                            "SELECT CIDMONEDA, CIDAGENTEVENTA FROM admClientes " +
-                            "WHERE CCODIGOCLIENTE = @cod",
-                            conn))
-                        {
-                            cmd.Parameters.AddWithValue("@cod", item.Codigo);
-                            using (var r = cmd.ExecuteReader())
-                            {
-                                if (r.Read())
-                                {
-                                    int idMon = r.IsDBNull(0) ? 0 : Convert.ToInt32(r[0]);
-                                    int idAgt = r.IsDBNull(1) ? 0 : Convert.ToInt32(r[1]);
-                                    if (idMon > 0)
-                                        for (int i = 0; i < cbMoneda.Items.Count; i++)
-                                            if (((ItemCombo)cbMoneda.Items[i]).Id == idMon)
-                                            { cbMoneda.SelectedIndex = i; break; }
-                                    if (idAgt > 0)
-                                        for (int i = 0; i < cbAgente.Items.Count; i++)
-                                            if (((ItemCombo)cbAgente.Items[i]).Id == idAgt)
-                                            { cbAgente.SelectedIndex = i; break; }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch { }
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // GUARDAR UN SOLO DOCUMENTO
-        // ─────────────────────────────────────────────────────────────────────
-        private void btnGuardar_Click(object sender, EventArgs e)
-        {
-            if (!ValidarEncabezado()) return;
-            if (dtExcel.Rows.Count == 0)
-            {
-                MessageBox.Show("Carga primero el archivo Excel.", "Aviso",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            try
-            {
-                int resultado = GuardarDocumento(dtExcel.Rows, 0, dtExcel.Rows.Count - 1);
-                if (resultado > 0)
-                {
-                    lblEstado.Text      = "Documento guardado correctamente (ID: " + resultado + ")";
-                    lblEstado.ForeColor = UITheme.Success;
-                    MessageBox.Show("Documento guardado exitosamente.\nID: " + resultado, "Exito",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                lblEstado.Text      = "Error al guardar";
-                lblEstado.ForeColor = UITheme.Danger;
-                MessageBox.Show("Error al guardar documento:\n" + ex.Message, "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
         // CARGA MASIVA
+        //
+        // Modo "Una sola factura":
+        //   Todos los movimientos del Excel → un único documento.
+        //   Cliente: primera fila con dato en columna A.
+        //
+        // Modo normal (por bloque):
+        //   Filas contiguas con cliente en col A = un bloque = un documento.
+        //   Fila vacía en col A = separador entre bloques.
         // ─────────────────────────────────────────────────────────────────────
         private void btnCargaMasiva_Click(object sender, EventArgs e)
         {
-            if (chkUnaSolaFactura.Checked)
-            {
-                if (!ValidarEncabezado()) return;
-            }
-            else
-            {
-                if (cbConcepto.SelectedItem == null)
-                {
-                    MessageBox.Show("Selecciona un concepto.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                if (!DateTime.TryParse(txtFecha.Text, out _))
-                {
-                    MessageBox.Show("Ingresa la fecha en formato AAAA/MM/DD.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                if (cbAlmacen.SelectedItem == null)
-                {
-                    MessageBox.Show("Selecciona un almacen.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-            }
+            if (!ValidarEncabezado()) return;
 
             if (dtExcel.Rows.Count == 0)
             {
@@ -407,25 +216,23 @@ namespace CargaComerMasivo
             }
 
             string modoTexto = chkUnaSolaFactura.Checked
-                ? "UN documento con todas las lineas. Cliente: " + cbCliente.Text
-                : "Un documento por BLOQUE de filas consecutivas (fila vacia = nuevo documento). Cliente leido de columna A.";
+                ? "UN documento con todos los movimientos. Cliente: primera fila del Excel."
+                : "Un documento por bloque (filas contiguas = bloque). Cliente de columna A.";
 
-            var confirm = MessageBox.Show(
-                "Deseas impactar " + dtExcel.Rows.Count + " lineas a CONTPAQi Comercial?\n" +
-                "Concepto: " + cbConcepto.Text + "\n" +
-                "Fecha: " + txtFecha.Text + "\n" +
-                "Modo: " + modoTexto,
-                "Confirmar Carga Masiva",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (MessageBox.Show(
+                    "¿Deseas impactar " + dtExcel.Rows.Count + " líneas a CONTPAQi Comercial?\n\n" +
+                    "Concepto : " + cbConcepto.Text + "\n" +
+                    "Fecha    : " + txtFecha.Text + "\n" +
+                    "Almacén  : " + cbAlmacen.Text + "\n" +
+                    "Modo     : " + modoTexto,
+                    "Confirmar Carga Masiva",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
-            if (confirm != DialogResult.Yes) return;
-
-            btnCargaMasiva.Enabled  = false;
-            btnGuardar.Enabled      = false;
-            pbProgreso.Value        = 0;
-            pbProgreso.Maximum      = dtExcel.Rows.Count;
-            lblEstado.Text          = "Procesando...";
-            lblEstado.ForeColor     = UITheme.Warning;
+            btnCargaMasiva.Enabled = false;
+            pbProgreso.Value       = 0;
+            pbProgreso.Maximum     = dtExcel.Rows.Count;
+            lblEstado.Text         = "Procesando...";
+            lblEstado.ForeColor    = UITheme.Warning;
             Application.DoEvents();
 
             try
@@ -435,27 +242,39 @@ namespace CargaComerMasivo
 
                 if (chkUnaSolaFactura.Checked)
                 {
-                    int idDoc = GuardarDocumento(dtExcel.Rows, 0, dtExcel.Rows.Count - 1);
+                    // ── Modo: un solo documento con todos los movimientos ─────
+                    string codCte = ObtenerClientePrimeraFila();
+                    if (string.IsNullOrEmpty(codCte))
+                    {
+                        MessageBox.Show(
+                            "La columna A del Excel no tiene código de cliente.",
+                            "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    int idDoc = GuardarDocumento(dtExcel.Rows, 0, dtExcel.Rows.Count - 1, codCte);
                     if (idDoc > 0)
                     {
                         exitosos         = dtExcel.Rows.Count;
                         pbProgreso.Value = dtExcel.Rows.Count;
+                        log.Add("Doc #" + idDoc + " — " + dtExcel.Rows.Count +
+                                " movimiento(s). Cliente: " + codCte);
                     }
                     else
                     {
-                        errores = dtExcel.Rows.Count;
-                        log.Add("Error al crear documento unico: codigo " + idDoc);
+                        errores++;
+                        log.Add("Error al crear documento único. Código SDK: " + idDoc);
                     }
                 }
                 else
                 {
-                    // Filas consecutivas sin fila vacia entre ellas = UN documento
-                    // Fila vacia (col A en blanco) = separador entre documentos
+                    // ── Modo: un documento por bloque ────────────────────────
                     int i = 0;
                     while (i < dtExcel.Rows.Count)
                     {
-                        // Saltar filas vacias
                         string codCte = dtExcel.Rows[i][COL_CLIENTE].ToString().Trim();
+
+                        // Fila vacía = separador entre bloques
                         if (string.IsNullOrEmpty(codCte))
                         {
                             pbProgreso.Value = i + 1;
@@ -464,29 +283,25 @@ namespace CargaComerMasivo
                             continue;
                         }
 
-                        // Detectar fin del bloque (hasta la proxima fila vacia o fin del excel)
-                        int desde = i;
-                        int hasta = i;
+                        // Detectar hasta dónde llega el bloque
+                        int desde = i, hasta = i;
                         while (hasta + 1 < dtExcel.Rows.Count &&
                                !string.IsNullOrEmpty(dtExcel.Rows[hasta + 1][COL_CLIENTE].ToString().Trim()))
-                        {
                             hasta++;
-                        }
 
-                        int numLineas = hasta - desde + 1;
-                        string rangoTxt = desde == hasta
+                        int    numLineas = hasta - desde + 1;
+                        string rangoTxt  = desde == hasta
                             ? "Fila " + (desde + 2)
                             : "Filas " + (desde + 2) + "-" + (hasta + 2);
 
-                        lblEstado.Text = "Procesando " + rangoTxt + " (" + numLineas + " movimientos)...";
+                        lblEstado.Text = "Procesando " + rangoTxt + " — cliente " + codCte + "...";
                         Application.DoEvents();
 
-                        // Validar que el cliente del bloque existe
-                        int idCteProvFila = BuscarIdClienteSQL(codCte);
-                        if (idCteProvFila <= 0)
+                        // Validar que el cliente exista en CONTPAQi
+                        if (BuscarIdClienteSQL(codCte) <= 0)
                         {
                             errores++;
-                            log.Add(rangoTxt + ": Cliente '" + codCte + "' no encontrado - bloque omitido.");
+                            log.Add(rangoTxt + ": cliente '" + codCte + "' no encontrado — omitido.");
                             for (int k = desde; k <= hasta; k++) pbProgreso.Value = k + 1;
                             i = hasta + 1;
                             Application.DoEvents();
@@ -495,18 +310,17 @@ namespace CargaComerMasivo
 
                         try
                         {
-                            // Guardar el bloque completo como UN documento
                             int idDoc = GuardarDocumento(dtExcel.Rows, desde, hasta, codCte);
                             if (idDoc > 0)
                             {
                                 exitosos++;
-                                log.Add(rangoTxt + ": OK — Documento ID " + idDoc +
+                                log.Add(rangoTxt + ": OK — Doc #" + idDoc +
                                         " (" + numLineas + " mov.) Cliente: " + codCte);
                             }
                             else
                             {
                                 errores++;
-                                log.Add(rangoTxt + ": Error al guardar (codigo SDK: " + idDoc + ")");
+                                log.Add(rangoTxt + ": error SDK código " + idDoc);
                             }
                         }
                         catch (Exception ex)
@@ -521,9 +335,10 @@ namespace CargaComerMasivo
                     }
                 }
 
+                // ── Resumen final ─────────────────────────────────────────────
                 string resumen = "Carga masiva completada:\nExitosos: " + exitosos + "\nErrores: " + errores;
                 if (log.Count > 0)
-                    resumen += "\n\nDetalle de errores:\n" + string.Join("\n", log.GetRange(0, Math.Min(log.Count, 10)));
+                    resumen += "\n\nDetalle:\n" + string.Join("\n", log.GetRange(0, Math.Min(log.Count, 10)));
 
                 lblEstado.Text      = "Carga masiva: " + exitosos + " ok, " + errores + " errores";
                 lblEstado.ForeColor = errores == 0 ? UITheme.Success : UITheme.Warning;
@@ -540,145 +355,103 @@ namespace CargaComerMasivo
             finally
             {
                 btnCargaMasiva.Enabled = true;
-                btnGuardar.Enabled     = true;
             }
-        }
-
-        // Devuelve CIDCLIENTEPROVEEDOR de admClientes dado el codigo de cliente
-        private int BuscarIdClienteSQL(string codigoCliente)
-        {
-            if (string.IsNullOrEmpty(Program.ConnStrEmpresa)) return 0;
-            try
-            {
-                using (var conn = new SqlConnection(Program.ConnStrEmpresa))
-                {
-                    conn.Open();
-                    using (var cmd = new SqlCommand(
-                        "SELECT CIDCLIENTEPROVEEDOR FROM admClientes WHERE CCODIGOCLIENTE = @cod",
-                        conn))
-                    {
-                        cmd.Parameters.AddWithValue("@cod", codigoCliente);
-                        object val = cmd.ExecuteScalar();
-                        return val == null || val == DBNull.Value ? 0 : Convert.ToInt32(val);
-                    }
-                }
-            }
-            catch { return 0; }
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // LOGICA CENTRAL: CREAR Y GUARDAR DOCUMENTO
+        // NÚCLEO: CREAR Y GUARDAR DOCUMENTO EN CONTPAQÍ
         //
-        // Usa la API "Alto nivel" del SDK:
-        //   fAltaDocumento(ref idDoc, ref tDocumento)        → crea encabezado
-        //   fAltaMovimiento(idDoc, ref idMov, ref tMovimiento) → agrega renglon
-        //   fGuardaMovimiento()                              → guarda renglon
-        //   fGuardaDocumento()                               → guarda todo
+        // Datos que ya NO vienen del UI — se deducen automáticamente:
+        //   Folio        → 0  (SDK asigna el siguiente disponible)
+        //   Tipo cambio  → 1.0
+        //   Referencia   → ""
+        //   Moneda       → leída de admClientes por cliente vía SQL
+        //   Agente       → leído de admClientes por cliente vía SQL
+        //   Serie        → columna G del Excel
+        //   Obs.Doc.     → columna E del Excel
+        //   Obs.Mov.     → columna D del Excel
         //
-        // codigoCteProvOverride = codigo STRING del cliente (columna A del Excel
-        // en modo por fila). Null/vacio = usa el cliente seleccionado en el combo.
+        // codCteProv: código STRING del cliente, siempre de columna A del Excel.
         // ─────────────────────────────────────────────────────────────────────
         private int GuardarDocumento(DataRowCollection rows, int desde, int hasta,
-                                     string codigoCteProvOverride = null)
+                                     string codCteProv)
         {
+            if (string.IsNullOrEmpty(codCteProv))
+                throw new Exception("No se especificó código de cliente/proveedor.");
+
             // ── Concepto ─────────────────────────────────────────────────────
-            var itemConcepto = (ItemCombo)cbConcepto.SelectedItem;
-            string codConceptoStr = itemConcepto.Code;   // e.g. "OCC", "FAC", "COC"
+            var    itemConcepto   = (ItemCombo)cbConcepto.SelectedItem;
+            string codConceptoStr = itemConcepto.Code;
             if (string.IsNullOrEmpty(codConceptoStr))
-                throw new Exception("El concepto seleccionado no tiene codigo valido.");
+                throw new Exception("El concepto seleccionado no tiene código válido.");
 
             // ── Fecha ─────────────────────────────────────────────────────────
             if (!DateTime.TryParse(txtFecha.Text, out DateTime fechaDt))
-                throw new Exception("Fecha invalida. Usa el formato AAAA/MM/DD.");
-            string fecha = fechaDt.ToString("MM/dd/yyyy");   // SDK espera MM/dd/yyyy
+                throw new Exception("Fecha inválida. Usa el formato AAAA/MM/DD.");
+            string fecha = fechaDt.ToString("MM/dd/yyyy"); // el SDK espera MM/dd/yyyy
 
-            // ── Serie ────────────────────────────────────────────────────────
+            // ── Serie — columna G del Excel ───────────────────────────────────
             string serie = "";
             if (desde < rows.Count && dtExcel.Columns.Count > COL_SERIE)
                 serie = rows[desde][COL_SERIE].ToString().Trim();
-            if (string.IsNullOrEmpty(serie))
-                serie = txtSerie.Text.Trim();
 
-            // ── Folio ────────────────────────────────────────────────────────
-            int.TryParse(txtFolio.Text, out int folioInt);
-            double folio = folioInt;
-
-            // ── Tipo de cambio ────────────────────────────────────────────────
-            double.TryParse(
-                txtTipoCambio.Text.Replace(",", "."),
-                System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out double tipoCambio);
-            if (tipoCambio <= 0) tipoCambio = 1.0;
-
-            // ── Moneda (ID numerico para el struct) ───────────────────────────
-            int idMoneda = cbMoneda.SelectedItem != null ? ((ItemCombo)cbMoneda.SelectedItem).Id : 1;
-
-            // ── Almacen (codigo STRING para tMovimiento) ──────────────────────
+            // ── Almacén ──────────────────────────────────────────────────────
             string codAlmacen = cbAlmacen.SelectedItem != null
                 ? ((ItemCombo)cbAlmacen.SelectedItem).Code : "";
             if (string.IsNullOrEmpty(codAlmacen))
-                throw new Exception("El almacen seleccionado no tiene codigo valido.");
+                throw new Exception("El almacén seleccionado no tiene código válido.");
 
-            // ── Agente (codigo STRING para tDocumento) ────────────────────────
-            string codAgente = cbAgente.SelectedItem != null
-                ? ((ItemCombo)cbAgente.SelectedItem).Code : "";
+            // ── Moneda y Agente — auto-leídos de admClientes por cliente ──────
+            int    idMoneda  = 1;
+            string codAgente = "";
+            ObtenerDatosCliente(codCteProv, out idMoneda, out codAgente);
 
-            // ── Cliente/Proveedor (codigo STRING para tDocumento) ─────────────
-            string codCteProv;
-            if (!string.IsNullOrEmpty(codigoCteProvOverride))
-                codCteProv = codigoCteProvOverride;
-            else
-            {
-                var itemCte = cbCliente.SelectedItem as ItemCteCombo;
-                codCteProv = itemCte != null ? itemCte.Codigo : "";
-            }
-            if (string.IsNullOrEmpty(codCteProv))
-                throw new Exception("No se especifico codigo de cliente/proveedor.");
-
-            // ── Observaciones y referencia ────────────────────────────────────
+            // ── Observaciones del documento — columna E del Excel ─────────────
             string obsDocumento = "";
             if (desde < rows.Count && dtExcel.Columns.Count > COL_OBS_DOCUMENTO)
                 obsDocumento = rows[desde][COL_OBS_DOCUMENTO].ToString().Trim();
-            if (string.IsNullOrEmpty(obsDocumento))
-                obsDocumento = txtObservaciones.Text.Trim();
 
-            string referencia = txtReferencia.Text.Trim();
-            if (referencia.Length > 20) referencia = referencia.Substring(0, 20); // max 21 chars
+            // ── Referencia — columna H del Excel (opcional) ───────────────────
+            string referencia = "";
+            if (desde < rows.Count && dtExcel.Columns.Count > COL_REFERENCIA)
+            {
+                referencia = rows[desde][COL_REFERENCIA].ToString().Trim();
+                if (referencia.Length > 20) referencia = referencia.Substring(0, 20);
+            }
 
             // ─────────────────────────────────────────────────────────────────
             // PASO 1 — Alta del documento (API Alto nivel)
             // ─────────────────────────────────────────────────────────────────
             var doc = new tDocumento
             {
-                aFolio         = folio,
+                aFolio         = 0,     // 0 = SDK asigna el siguiente folio disponible
                 aNumMoneda     = idMoneda,
-                aTipoCambio    = tipoCambio,
-                aImporte       = 0,      // el SDK lo calcula de los movimientos
+                aTipoCambio    = 1.0,
+                aImporte       = 0,     // 0 = SDK lo calcula de los movimientos
                 aDescuentoDoc1 = 0,
                 aDescuentoDoc2 = 0,
-                aSistemaOrigen = 205,    // 205 = CONTPAQi Comercial Premium
+                aSistemaOrigen = 205,   // 205 = CONTPAQi Comercial Premium
                 aCodConcepto   = codConceptoStr,
                 aSerie         = serie,
                 aFecha         = fecha,
                 aCodigoCteProv = codCteProv,
                 aCodigoAgente  = codAgente,
                 aReferencia    = referencia,
-                aAfecta        = 1,      // 1=entradas (compras)
+                aAfecta        = 1,     // 1 = entradas (compras)
                 aGasto1        = 0,
                 aGasto2        = 0,
                 aGasto3        = 0
             };
 
-            int idDocumento = 0;
-            string paso = "fAltaDocumento";
+            int    idDocumento = 0;
+            string paso        = "fAltaDocumento";
             try
             {
                 int resAlta = SdkComercial.fAltaDocumento(ref idDocumento, ref doc);
                 if (resAlta != 0)
                     throw new Exception("fAltaDocumento error: " + SdkComercial.DescribirError(resAlta));
 
-                // ── PASO 2 — Observaciones del encabezado (bajo nivel) ────────
+                // ── PASO 2 — Observaciones del encabezado ─────────────────────
                 if (!string.IsNullOrEmpty(obsDocumento))
                 {
                     paso = "fSetDatoDocumento:COBSERVACIONES";
@@ -689,7 +462,7 @@ namespace CargaComerMasivo
                 int consecutivo = 1;
                 for (int i = desde; i <= hasta; i++)
                 {
-                    var row = rows[i];
+                    var    row         = rows[i];
                     string codProducto = row[COL_CODIGO_PRODUCTO].ToString().Trim();
                     if (string.IsNullOrEmpty(codProducto)) continue;
 
@@ -716,7 +489,7 @@ namespace CargaComerMasivo
                         aConsecutivo      = consecutivo++,
                         aUnidades         = unidades,
                         aPrecio           = precio,
-                        aCosto            = precio,  // en compras, costo = precio
+                        aCosto            = precio, // en compras, costo = precio
                         aCodProdSer       = codProducto,
                         aCodAlmacen       = codAlmacen,
                         aReferencia       = "",
@@ -732,7 +505,6 @@ namespace CargaComerMasivo
                             SdkComercial.DescribirError(resMov));
                     }
 
-                    // Observaciones del movimiento (campo bajo nivel)
                     if (!string.IsNullOrEmpty(obsMov))
                     {
                         paso = "fSetDatoMovimiento:COBSERVAMOV (prod=" + codProducto + ")";
@@ -759,12 +531,12 @@ namespace CargaComerMasivo
                         SdkComercial.DescribirError(resFinal));
                 }
 
-                // idDocumento fue asignado por fAltaDocumento; si es 0 intentar leerlo
+                // Si el SDK no devolvió el ID en idDocumento, intentar leerlo del contexto
                 if (idDocumento <= 0)
                 {
                     string sId = SdkComercial.LeerCampoDocumento("CIDDOCUMENTO");
                     int.TryParse(sId, out idDocumento);
-                    if (idDocumento <= 0) idDocumento = 1; // al menos indico exito
+                    if (idDocumento <= 0) idDocumento = 1;
                 }
 
                 return idDocumento;
@@ -776,45 +548,126 @@ namespace CargaComerMasivo
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // VALIDACIONES
+        // HELPERS SQL
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Lee CIDMONEDA y CCODIGOAGENTE de admClientes para el cliente dado.
+        /// Si falla, devuelve los valores por defecto (moneda 1, sin agente).
+        /// </summary>
+        private void ObtenerDatosCliente(string codCteProv, out int idMoneda, out string codAgente)
+        {
+            idMoneda  = 1;
+            codAgente = "";
+            if (string.IsNullOrEmpty(Program.ConnStrEmpresa) ||
+                string.IsNullOrEmpty(codCteProv)) return;
+            try
+            {
+                using (var conn = new SqlConnection(Program.ConnStrEmpresa))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand(
+                        "SELECT c.CIDMONEDA, a.CCODIGOAGENTE " +
+                        "FROM admClientes c " +
+                        "LEFT JOIN admAgentes a ON a.CIDAGENTE = c.CIDAGENTEVENTA " +
+                        "WHERE c.CCODIGOCLIENTE = @cod",
+                        conn))
+                    {
+                        cmd.Parameters.AddWithValue("@cod", codCteProv);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            if (r.Read())
+                            {
+                                if (!r.IsDBNull(0)) idMoneda  = Convert.ToInt32(r[0]);
+                                if (!r.IsDBNull(1)) codAgente = r[1].ToString().Trim();
+                            }
+                        }
+                    }
+                }
+            }
+            catch { /* si falla la consulta, usar defaults — no interrumpir el proceso */ }
+        }
+
+        /// <summary>
+        /// Devuelve CIDCLIENTEPROVEEDOR dado un código de cliente; 0 si no existe.
+        /// Se usa para validar antes de crear el documento.
+        /// </summary>
+        private int BuscarIdClienteSQL(string codigoCliente)
+        {
+            if (string.IsNullOrEmpty(Program.ConnStrEmpresa)) return 0;
+            try
+            {
+                using (var conn = new SqlConnection(Program.ConnStrEmpresa))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand(
+                        "SELECT CIDCLIENTEPROVEEDOR FROM admClientes WHERE CCODIGOCLIENTE = @cod",
+                        conn))
+                    {
+                        cmd.Parameters.AddWithValue("@cod", codigoCliente);
+                        object val = cmd.ExecuteScalar();
+                        return val == null || val == DBNull.Value ? 0 : Convert.ToInt32(val);
+                    }
+                }
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Devuelve el código de cliente de la primera fila no vacía del Excel (columna A).
+        /// </summary>
+        private string ObtenerClientePrimeraFila()
+        {
+            foreach (DataRow row in dtExcel.Rows)
+            {
+                string cod = row[COL_CLIENTE].ToString().Trim();
+                if (!string.IsNullOrEmpty(cod)) return cod;
+            }
+            return "";
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // VALIDACIONES — solo Concepto, Fecha y Almacén.
+        // El cliente y el resto ya no se validan aquí porque vienen del Excel.
         // ─────────────────────────────────────────────────────────────────────
         private bool ValidarEncabezado()
         {
             if (cbConcepto.SelectedItem == null)
             {
-                MessageBox.Show("Selecciona un concepto.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecciona un concepto.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
             if (string.IsNullOrEmpty(((ItemCombo)cbConcepto.SelectedItem).Code))
             {
-                MessageBox.Show("El concepto seleccionado no tiene codigo valido.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("El concepto seleccionado no tiene código válido.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
             if (!DateTime.TryParse(txtFecha.Text, out _))
             {
-                MessageBox.Show("Ingresa la fecha en formato AAAA/MM/DD.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Ingresa la fecha en formato AAAA/MM/DD.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-            if (cbCliente.SelectedItem == null || nIdCteProv <= 0)
+            if (cbAlmacen.SelectedItem == null ||
+                string.IsNullOrEmpty(((ItemCombo)cbAlmacen.SelectedItem).Code))
             {
-                MessageBox.Show("Selecciona un cliente/proveedor valido.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            if (cbAlmacen.SelectedItem == null || string.IsNullOrEmpty(((ItemCombo)cbAlmacen.SelectedItem).Code))
-            {
-                MessageBox.Show("Selecciona un almacen valido.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecciona un almacén válido.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
             return true;
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        // SALIR
+        // ─────────────────────────────────────────────────────────────────────
         private void btnSalir_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Deseas cerrar la empresa y salir?", "Confirmar",
+            if (MessageBox.Show("¿Deseas cerrar la empresa y salir?", "Confirmar",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            {
                 this.Close();
-            }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
@@ -830,29 +683,17 @@ namespace CargaComerMasivo
         private class ItemCombo
         {
             public int    Id   { get; }
-            public string Code { get; }       // Codigo string (para SDK fAlta*)
+            public string Code { get; }
             private string Nombre { get; }
+
             public ItemCombo(int id, string nombre, string code = "")
             {
                 Id     = id;
                 Code   = code ?? "";
                 Nombre = nombre;
             }
-            public override string ToString() => Nombre;
-        }
 
-        private class ItemCteCombo
-        {
-            public string Codigo { get; }
-            public int    Id     { get; }
-            private string Nombre { get; }
-            public ItemCteCombo(string codigo, string nombre, int id = 0)
-            {
-                Codigo = codigo;
-                Nombre = nombre;
-                Id     = id;
-            }
-            public override string ToString() => Codigo + " - " + Nombre;
+            public override string ToString() => Nombre;
         }
     }
 }

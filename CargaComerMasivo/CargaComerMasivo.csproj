@@ -12,6 +12,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>full</DebugType>
@@ -24,19 +27,37 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System.Resources.Extensions">
+      <HintPath>C:\Program Files\dotnet\sdk\10.0.300\System.Resources.Extensions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
-<Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.4.5.3.3\lib\net35\EPPlus.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CfdiModelo.cs" />
+    <Compile Include="CfdiParser.cs" />
+    <Compile Include="FrmCrearCatalogos.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="SdkComercial.cs" />
     <Compile Include="UITheme.cs" />
+    <Compile Include="CtrlCustom.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LicenseCheck.cs" />
+    <Compile Include="RegistroProcesados.cs" />
+    <Compile Include="FrmControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FrmConexion.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -55,6 +76,13 @@
     </Compile>
     <Compile Include="FrmMenu.Designer.cs">
       <DependentUpon>FrmMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SincronizadorCatalogo.cs" />
+    <Compile Include="FrmSincronizacion.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmPruebaCatalogo.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrmCancelaDoctos.cs">
       <SubType>Form</SubType>
@@ -78,6 +106,22 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="App.config" />
+    <None Include="icono.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="FrmAlmacenes.resx">
+      <DependentUpon>FrmAlmacenes.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

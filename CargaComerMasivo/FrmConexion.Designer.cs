@@ -33,24 +33,25 @@ namespace CargaComerMasivo
             lblTitulo    = new System.Windows.Forms.Label();
             lblSubtitulo = new System.Windows.Forms.Label();
 
-            var lblIcon   = new System.Windows.Forms.Label();
+            var picLogo   = new System.Windows.Forms.PictureBox();
             var pnlLine   = new System.Windows.Forms.Panel();
 
             pnlHeader.BackColor = UITheme.BgHeader;
             pnlHeader.Dock      = System.Windows.Forms.DockStyle.Top;
             pnlHeader.Height    = 72;
 
-            lblIcon.Text      = "⬡";
-            lblIcon.Font      = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
-            lblIcon.ForeColor = UITheme.Accent;
-            lblIcon.AutoSize  = true;
-            lblIcon.Location  = new System.Drawing.Point(18, 14);
+            // Logo WinetPC desde Properties.Resources
+            picLogo.Size      = new System.Drawing.Size(52, 52);
+            picLogo.Location  = new System.Drawing.Point(10, 10);
+            picLogo.SizeMode  = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            picLogo.BackColor = UITheme.BgHeader;
+            try { picLogo.Image = Properties.Resources.icono; } catch { }
 
             lblTitulo.Text      = "Comercial Masivo";
             lblTitulo.Font      = UITheme.FntTitle;
             lblTitulo.ForeColor = UITheme.TextMain;
             lblTitulo.AutoSize  = true;
-            lblTitulo.Location  = new System.Drawing.Point(58, 12);
+            lblTitulo.Location  = new System.Drawing.Point(72, 12);
 
             var lblBadge = new System.Windows.Forms.Label();
             lblBadge.Text      = " v2.0 ";
@@ -58,19 +59,19 @@ namespace CargaComerMasivo
             lblBadge.ForeColor = UITheme.BgHeader;
             lblBadge.BackColor = UITheme.Accent;
             lblBadge.AutoSize  = true;
-            lblBadge.Location  = new System.Drawing.Point(232, 18);
+            lblBadge.Location  = new System.Drawing.Point(246, 18);
 
             lblSubtitulo.Text      = "CONTPAQi Comercial Premium  ·  Carga Masiva de Documentos";
             lblSubtitulo.Font      = UITheme.FntSub;
             lblSubtitulo.ForeColor = UITheme.TextMuted;
             lblSubtitulo.AutoSize  = true;
-            lblSubtitulo.Location  = new System.Drawing.Point(60, 42);
+            lblSubtitulo.Location  = new System.Drawing.Point(72, 42);
 
             pnlLine.BackColor = UITheme.Accent;
             pnlLine.Dock      = System.Windows.Forms.DockStyle.Bottom;
             pnlLine.Height    = 2;
 
-            pnlHeader.Controls.Add(lblIcon);
+            pnlHeader.Controls.Add(picLogo);
             pnlHeader.Controls.Add(lblTitulo);
             pnlHeader.Controls.Add(lblBadge);
             pnlHeader.Controls.Add(lblSubtitulo);

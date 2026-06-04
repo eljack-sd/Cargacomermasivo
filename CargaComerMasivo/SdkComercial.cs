@@ -163,9 +163,14 @@ namespace CargaComerMasivo
         [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
         public static extern int fCancelarModificacionAgente();
 
-        public static int fBorraAgente(int nIdAgente)                                              { return -1; }
-        public static int fObtenNumAgentes()                                                        { return 0; }
-        public static int fLeeDatoAgenteNum(int nPos, string sCampo, StringBuilder sb, int len)    { return -1; }
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fBorraAgente(int nIdAgente);
+
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fObtenNumAgentes();
+
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fLeeDatoAgenteNum(int nPos, string sCampo, StringBuilder sValor, int nLen);
 
         // ── Almacenes ─────────────────────────────────────────────────────────
         [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -186,10 +191,17 @@ namespace CargaComerMasivo
         [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
         public static extern int fCancelarModificacionAlmacen();
 
-        public static int fInsertaAlmacen()                                                                 { return -1; }
-        public static int fBorraAlmacen(int nIdAlmacen)                                                    { return -1; }
-        public static int fObtenNumAlmacenes()                                                              { return 0; }
-        public static int fLeeDatoAlmacenNum(int nPos, string sCampo, StringBuilder sb, int len)           { return -1; }
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fInsertaAlmacen();
+
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fBorraAlmacen(int nIdAlmacen);
+
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fObtenNumAlmacenes();
+
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fLeeDatoAlmacenNum(int nPos, string sCampo, StringBuilder sValor, int nLen);
 
         // ── Conceptos ─────────────────────────────────────────────────────────
         [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -201,8 +213,92 @@ namespace CargaComerMasivo
         [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public static extern int fLeeDatoConceptoDocto(int nIdConcepto, string sCampo, StringBuilder sValor, int aLen);
 
-        public static int fObtenNumConceptos()                                                              { return 0; }
-        public static int fLeeDatoConceptoNum(int nPos, string sCampo, StringBuilder sb, int len)          { return -1; }
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fObtenNumConceptos();
+
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fLeeDatoConceptoNum(int nPos, string sCampo, StringBuilder sValor, int nLen);
+
+        // ── Productos / Servicios ─────────────────────────────────────────────
+        // Busca un producto por código; retorna 0=ok (queda posicionado), negativo=no encontrado.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fBuscaProducto(string sCodigo);
+
+        // Busca un producto por su ID interno.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fBuscaIdProducto(int nIdProducto);
+
+        // Lee un campo del producto posicionado (por ID).
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fLeeDatoProducto(int nIdProducto, string sCampo, StringBuilder sValor, int nLen);
+
+        // Número total de productos en el catálogo.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fObtenNumProductos();
+
+        // Lee un campo de un producto por posición (0-based) — para enumerar el catálogo completo.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fLeeDatoProductoNum(int nPos, string sCampo, StringBuilder sValor, int nLen);
+
+        // Crea un nuevo producto en modo inserción; retorna 0=ok, negativo=error.
+        // El SDK queda en "modo inserción" para el producto actual.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fInsertaProducto();
+
+        // Pone un producto existente en modo edición; retorna 0=ok, negativo=error.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fEditaProducto(int nIdProducto);
+
+        // Establece un campo del producto en modo inserción/edición actual (sin ID).
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fSetDatoProducto(string sCampo, string sValor);
+
+        // Guarda el producto actual (insert o update); retorna 0=ok, negativo=error.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fGuardaProducto();
+
+        // Cancela la inserción/edición del producto sin guardar.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern void fCancelarModificacionProducto();
+
+        // Borra un producto existente.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fBorraProducto(int nIdProducto);
+
+        // ── Clientes / Proveedores — CRUD ─────────────────────────────────────
+        // (fBuscaCteProv / fBuscaIdCteProv / fLeeDatoCteProv ya están arriba)
+
+        // Número total de clientes/proveedores en el catálogo.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fObtenNumCtesProv();
+
+        // Lee un campo de un cliente/proveedor por posición (0-based).
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fLeeDatoCtesProvNum(int nPos, string sCampo, StringBuilder sValor, int nLen);
+
+        // Crea un nuevo cliente/proveedor en modo inserción; retorna 0=ok, negativo=error.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fInsertaCteProv();
+
+        // Pone un cliente/proveedor existente en modo edición.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fEditaCteProv(int nIdCteProv);
+
+        // Establece un campo del cliente/proveedor en modo inserción/edición actual (sin ID).
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        public static extern int fSetDatoCteProv(string sCampo, string sValor);
+
+        // Guarda el cliente/proveedor actual; retorna 0=ok, negativo=error.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fGuardaCteProv();
+
+        // Cancela la inserción/edición sin guardar.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern void fCancelarModificacionCteProv();
+
+        // Borra un cliente/proveedor existente.
+        [DllImport(DLL, CallingConvention = CallingConvention.StdCall)]
+        public static extern int fBorraCteProv(int nIdCteProv);
 
         // ── Folios ────────────────────────────────────────────────────────────
         // Firma oficial: fSiguienteFolio(aCodigoConcepto:CADENA, aSerie:CADENA ref, aFolio:DOUBLE ref)
