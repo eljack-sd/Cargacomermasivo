@@ -533,11 +533,11 @@ namespace CargaComerMasivo
                 }
                 else
                 {
-                    // Ciclo regular — desde 60 s atrás con span de 56 días hacia adelante
-                    // Así captura pedidos nuevos (últimos 60 s) aunque su fecha sea futura (hasta 8 semanas)
-                    unix        = DateTimeOffset.UtcNow.AddSeconds(-60).ToUnixTimeSeconds();
-                    long span56d = 56 * 24 * 60 * 60;
-                    url         = string.Format(API_SPAN_URL, unix, span56d);
+                    // Ciclo regular — desde 7 días atrás con span de 63 días (7 días atrás + 8 semanas adelante)
+                    // Así captura pedidos nuevos aunque su fecha sea pasada (hasta 7 días) o futura (hasta 8 semanas)
+                    unix        = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
+                    long span63d = 63 * 24 * 60 * 60;
+                    url         = string.Format(API_SPAN_URL, unix, span63d);
                     rutaArchivo = RutaDescargaLocal("span_tmp");
                     await Task.Run(() => DescargarArchivo(url, rutaArchivo));
                 }
